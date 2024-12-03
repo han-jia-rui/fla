@@ -1,0 +1,15 @@
+CompileFlags: # Tweak the parse settings
+  Add:
+    [
+      -xc++,
+      -std=c++14,
+      -Wall,
+      -Wshadow,
+      -Weffc++,
+      -Wextra,
+      -Wconversion,
+      -Wsign-conversion,
+      -Werror,
+      -pedantic-errors,
+    ]
+  Compiler: g++
