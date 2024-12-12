@@ -1,15 +1,39 @@
 cmake_minimum_required(VERSION 3.15.0)
 
-project(fla_project)
+project(FLA
+        LANGUAGES CXX)
+
+# ---- Include guards ----
+
+if(PROJECT_SOURCE_DIR STREQUAL PROJECT_BINARY_DIR)
+    message(
+    FATAL_ERROR
+      "In-source builds not allowed. Please make a new directory (called a build directory) and run CMake from there."
+  )
+endif()
 
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(CMAKE_CXX_EXTENSIONS OFF)
-
-include_directories(${PROJECT_SOURCE_DIR}/fla-project)
-
-aux_source_directory(${PROJECT_SOURCE_DIR}/fla-project CPP_SRC)
-
+set(CMAKE_CXX_EXTENSIONS OFF) # disable compiler-specific extensions
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON) # generate compile_commands.json
 set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
-add_executable(fla ${CPP_SRC})
+
+add_executable(fla)
+
+target_include_directories(fla
+                            PUBLIC ${PROJECT_SOURCE_DIR}/include
+                            PRIVATE ${PROJECT_SOURCE_DIR}/src)
+
+file(GLOB_RECURSE fla_sources ${PROJECT_SOURCE_DIR}/src/*.cpp)
+target_sources(fla PRIVATE ${fla_sources})
+
+target_compile_options(fla PRIVATE -Wall -Wextra -Werror -Wpedantic)
+
+if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
+    include(CTest)
+endif()
+
+if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME AND BUILD_TESTING)
+    add_subdirectory(test)
+endif()
 
