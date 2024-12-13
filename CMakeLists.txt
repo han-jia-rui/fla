@@ -24,7 +24,7 @@ target_include_directories(fla
                             PUBLIC ${PROJECT_SOURCE_DIR}/include
                             PRIVATE ${PROJECT_SOURCE_DIR}/src)
 
-file(GLOB_RECURSE fla_sources ${PROJECT_SOURCE_DIR}/src/*.cpp)
+file(GLOB_RECURSE fla_sources src/*.cc)
 target_sources(fla PRIVATE ${fla_sources})
 
 target_compile_options(fla PRIVATE -Wall -Wextra -Werror -Wpedantic)

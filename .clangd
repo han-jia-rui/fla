@@ -10,6 +10,6 @@ CompileFlags: # Tweak the parse settings
       -Wconversion,
       -Wsign-conversion,
       -Werror,
-      -pedantic-errors,
+      -Wpedantic,
     ]
   Compiler: g++

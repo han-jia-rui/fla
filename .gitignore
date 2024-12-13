@@ -49,5 +49,4 @@ build
 bin
 lib
 .cache
-test
 *.log
