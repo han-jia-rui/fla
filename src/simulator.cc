@@ -20,7 +20,7 @@ bool Alphabet::is_valid(std::string s) {
 }
 
 void Simulator::set_verbose(bool verbose) {
-    std::clog << "Verbose mode: " << (_verbose ? "on" : "off") << std::endl;
+    std::clog << "Verbose mode: " << (verbose ? "on" : "off") << std::endl;
     _verbose = verbose;
 }
 

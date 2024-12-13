@@ -8,13 +8,28 @@
 namespace fla {
 
 void PDASimulator::run(const std::string &input) {
-    std::clog << "Running PDM with input: " << input << std::endl;
+    for (size_t i = 0; i < input.size(); ++i) {
+        std::string tmp = std::string(1, input[i]);
 
-    for (char c : input) {
-        _input.push(c);
+        if (!_input_alphabet.contains(tmp)) {
+            _error = Error::InputError;
+            _error_logs.push_back("Input: " + input);
+            _error_logs.push_back("==================== ERR ====================");
+            _error_logs.push_back("error: '" + tmp +
+                                  "' was not declared in the set of input symbols");
+            _error_logs.push_back("Input: " + input);
+            _error_logs.push_back(std::string(7 + i, ' ') + std::string(1, '^'));
+            _error_logs.push_back("==================== END ====================");
+            error_handler();
+        }
+
+        _input.push(input[i]);
     }
     _stack.push_back(_stack_start_symbol[0]);
     _current_state = _start_state;
+
+    std::clog << "Input: " + input << std::endl;
+    std::clog << "==================== RUN ====================" << std::endl;
 
     while (true) {
         if (_verbose)
@@ -69,19 +84,19 @@ void PDASimulator::error_handler() {
     if (_error == Error::None)
         return;
 
-    switch (_error) {
-    case Error::SyntaxError:
-        std::cerr << "syntax error" << std::endl;
-        break;
-    case Error::InputError:
-        std::cerr << "illegal input" << std::endl;
-        break;
-    default:
-        break;
-    }
-
-    if (_verbose) {
-        std::cerr << "Error logs:" << std::endl;
+    if (!_verbose) {
+        switch (_error) {
+        case Error::SyntaxError:
+            std::cerr << "syntax error" << std::endl;
+            break;
+        case Error::InputError:
+            std::cerr << "illegal input" << std::endl;
+            break;
+        default:
+            break;
+        }
+    } else {
+        std::clog << "Error logs:" << std::endl;
         for (const std::string &error : _error_logs) {
             std::cerr << error << std::endl;
         }
@@ -118,9 +133,7 @@ void PDASimulator::print_state() {
     } else {
         print_stack();
     }
-    for (size_t i = 0; i < 40; i++)
-        std::clog << '-';
-    std::clog << std::endl;
+    std::clog << "---------------------------------------------" << std::endl;
 }
 
 } // namespace fla

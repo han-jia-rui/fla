@@ -43,7 +43,7 @@ class Alphabet {
     static bool is_valid(std::string s);
 
     void add(std::string s) { _alphabet.insert(s); };
-    bool contains(std::string s) const { return _alphabet.find(s) != _alphabet.end(); };
+    bool contains(const std::string &s) const { return _alphabet.find(s) != _alphabet.end(); };
     bool empty() const { return _alphabet.empty(); };
 
   private:
