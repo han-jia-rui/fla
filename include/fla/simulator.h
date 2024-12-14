@@ -12,6 +12,8 @@ enum class Error {
     SyntaxError,
 
     InputError,
+
+    OtherError,
 };
 
 class State {
@@ -61,6 +63,9 @@ class Simulator {
     void set_verbose(bool verbose);
 
   protected:
+    virtual void halt() = 0;
+    virtual void error_handler() = 0;
+
     bool _verbose = false;
 
     std::vector<std::string> _error_logs{};

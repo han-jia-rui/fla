@@ -49,6 +49,10 @@ int main(int argc, char *argv[]) {
         return EXIT_SUCCESS;
     }
 
+    if (!options["-v"] && !options["--verbose"]) {
+        std::clog.setstate(std::ios_base::failbit);
+    }
+
     if (args.size() != 2) {
         print_usage();
         return EXIT_FAILURE;

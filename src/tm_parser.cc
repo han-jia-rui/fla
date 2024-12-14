@@ -1,16 +1,15 @@
-#include <fla/pda.h>
+#include <fla/tm.h>
 
 #include <fstream>
 #include <functional>
 #include <iostream>
 #include <regex>
 #include <sstream>
-#include <string>
 
 namespace fla {
 
-void PDASimulator::parse(const std::string &filepath) {
-    std::clog << "Parsing PDM from file: " << filepath << std::endl;
+void TMSimulator::parse(const std::string &filepath) {
+    std::clog << "Parsing TM from file: " << filepath << std::endl;
     std::ifstream fin(filepath);
 
     if (!fin.is_open()) {
@@ -19,7 +18,7 @@ void PDASimulator::parse(const std::string &filepath) {
         error_handler();
     }
 
-    // init parse_handlers
+    // Init the parse_handlers
     std::vector<std::pair<std::regex, std::function<void(const std::string &)>>> parse_handlers = {
         {
             std::regex(R"(#Q = \{([^}]+)\})"),
@@ -38,12 +37,16 @@ void PDASimulator::parse(const std::string &filepath) {
             [this](const std::string &line) -> void { this->parse_start_state(line); },
         },
         {
-            std::regex(R"(#z0 = ([^ ]+))"),
-            [this](const std::string &line) -> void { this->parse_stack_start_symbol(line); },
+            std::regex(R"(#B = ([^ ]+))"),
+            [this](const std::string &line) -> void { this->parse_empty_symbol(line); },
         },
         {
             std::regex(R"(#F = \{([^}]+)\})"),
             [this](const std::string &line) -> void { this->parse_accept_states(line); },
+        },
+        {
+            std::regex(R"(#N = ([^ ]+))"),
+            [this](const std::string &line) -> void { this->parse_tape_number(line); },
         },
     };
 
@@ -78,24 +81,27 @@ void PDASimulator::parse(const std::string &filepath) {
         }
     }
 
-    { // check PDA configuration
+    { // check the configuration of TM
         if (_states.empty())
             _error_logs.push_back("No states defined");
 
         if (_input_alphabet.empty())
             _error_logs.push_back("No input alphabet defined");
 
-        if (_stack_alphabet.empty())
+        if (_tape_alphabet.empty())
             _error_logs.push_back("No stack alphabet defined");
 
         if (_start_state.empty())
             _error_logs.push_back("No start state defined");
 
-        if (_stack_start_symbol.empty())
+        if (_empty_symbol.empty())
             _error_logs.push_back("No stack start symbol defined");
 
         if (_accept_states.empty())
             _error_logs.push_back("No accept states defined");
+
+        if (_tape_number <= 0)
+            _error_logs.push_back("No tape number defined");
 
         if (_transitions.empty())
             _error_logs.push_back("No transitions defined");
@@ -107,7 +113,7 @@ void PDASimulator::parse(const std::string &filepath) {
     }
 }
 
-void PDASimulator::parse_states(const std::string &line) {
+void TMSimulator::parse_states(const std::string &line) {
     std::stringstream ss(line);
     std::string tmp;
     while (std::getline(ss, tmp, ',')) {
@@ -121,12 +127,12 @@ void PDASimulator::parse_states(const std::string &line) {
     }
 }
 
-void PDASimulator::parse_input_alphabet(const std::string &line) {
+void TMSimulator::parse_input_alphabet(const std::string &line) {
     std::stringstream ss(line);
     std::string tmp;
     while (std::getline(ss, tmp, ',')) {
         strip(tmp);
-        if (!Alphabet::is_valid(tmp)) {
+        if (!Alphabet::is_valid(tmp) && tmp != "_") {
             _error = Error::SyntaxError;
             _error_logs.push_back("Invalid alphabet symbol: " + tmp);
             return;
@@ -135,21 +141,21 @@ void PDASimulator::parse_input_alphabet(const std::string &line) {
     }
 }
 
-void PDASimulator::parse_stack_alphabet(const std::string &line) {
+void TMSimulator::parse_stack_alphabet(const std::string &line) {
     std::stringstream ss(line);
     std::string tmp;
     while (std::getline(ss, tmp, ',')) {
         strip(tmp);
-        if (!Alphabet::is_valid(tmp)) {
+        if (!Alphabet::is_valid(tmp) && tmp != "_") {
             _error = Error::SyntaxError;
             _error_logs.push_back("Invalid alphabet symbol: " + tmp);
             return;
         }
-        _stack_alphabet.add(tmp);
+        _tape_alphabet.add(tmp);
     }
 }
 
-void PDASimulator::parse_start_state(const std::string &line) {
+void TMSimulator::parse_start_state(const std::string &line) {
     const std::string &start_state = line;
     if (!State::is_valid(start_state)) {
         _error = Error::SyntaxError;
@@ -159,17 +165,17 @@ void PDASimulator::parse_start_state(const std::string &line) {
     _start_state.set_name(start_state);
 }
 
-void PDASimulator::parse_stack_start_symbol(const std::string &line) {
-    const std::string &stack_start_symbol = line;
-    if (!Alphabet::is_valid(stack_start_symbol)) {
+void TMSimulator::parse_empty_symbol(const std::string &line) {
+    const std::string &empty_symbol = line;
+    if (empty_symbol != "_") {
         _error = Error::SyntaxError;
-        _error_logs.push_back("Invalid stack start symbol: " + stack_start_symbol);
+        _error_logs.push_back("Invalid stack start symbol: " + empty_symbol);
         return;
     }
-    _stack_start_symbol = stack_start_symbol;
+    _empty_symbol = empty_symbol;
 }
 
-void PDASimulator::parse_accept_states(const std::string &line) {
+void TMSimulator::parse_accept_states(const std::string &line) {
     std::stringstream ss(line);
     std::string tmp;
     while (std::getline(ss, tmp, ',')) {
@@ -183,7 +189,23 @@ void PDASimulator::parse_accept_states(const std::string &line) {
     }
 }
 
-void PDASimulator::parse_transitions(const std::string &line) {
+void TMSimulator::parse_tape_number(const std::string &line) {
+    try {
+        int tape_number = std::stoi(line);
+        if (tape_number <= 0)
+            throw std::out_of_range("tape_number must be greater than 0");
+
+        _tape_number = static_cast<size_t>(tape_number);
+    } catch (const std::invalid_argument &) {
+        _error = Error::SyntaxError;
+        _error_logs.push_back("Invalid tape_number: " + line);
+    } catch (const std::out_of_range &) {
+        _error = Error::SyntaxError;
+        _error_logs.push_back("Tape_number out of range: " + line);
+    }
+}
+
+void TMSimulator::parse_transitions(const std::string &line) {
     std::stringstream ss(line);
     std::string item;
     std::vector<std::string> elements;
@@ -198,33 +220,40 @@ void PDASimulator::parse_transitions(const std::string &line) {
     }
 
     const std::string &from_state = elements[0];
-    const std::string &input_char = elements[1];
-    const std::string &stack_top = elements[2];
-    const std::string &to_state = elements[3];
-    const std::string &stack_push = elements[4];
+    const std::string &old_str = elements[1];
+    const std::string &new_str = elements[2];
+    const std::string &direction_str = elements[3];
+    const std::string &to_state = elements[4];
 
-    { // check transition grammar
+    { // check the grammar of transition
+
         if (_states.find(State(from_state)) == _states.end())
             _error_logs.push_back("Invalid from state name: " + from_state);
 
-        if (input_char != "_" &&
-            !_input_alphabet.contains(input_char)) // The input char can be empty
-            _error_logs.push_back("Invalid input character: " + input_char);
+        if (old_str.size() != _tape_number)
+            _error_logs.push_back("Invalid old string: " + old_str);
+        for (char c : old_str)
+            if (c != '*' && !_tape_alphabet.contains(std::string(1, c)))
+                _error_logs.push_back("Invalid old string: " + old_str);
 
-        if (!_stack_alphabet.contains(stack_top)) // The stack top can not be empty
-            _error_logs.push_back("Invalid stack top symbol: " + stack_top);
+        if (new_str.size() != _tape_number)
+            _error_logs.push_back("Invalid new string: " + new_str);
+        for (char c : new_str)
+            if (c != '*' && !_tape_alphabet.contains(std::string(1, c)))
+                _error_logs.push_back("Invalid new string: " + new_str);
+
+        if (direction_str.size() != _tape_number)
+            _error_logs.push_back("Invalid direction string: " + direction_str);
+        for (char c : direction_str)
+            if (c != 'l' && c != 'r' && c != '*')
+                _error_logs.push_back("Invalid direction string: " + direction_str);
 
         if (_states.find(State(to_state)) == _states.end())
             _error_logs.push_back("Invalid to state name: " + to_state);
 
-        if (stack_push != "_") { // The stack push string can be empty
-            for (char c : stack_push) {
-                if (!_stack_alphabet.contains(std::string(1, c))) {
-                    _error_logs.push_back("Invalid stack push symbol: " + stack_push);
-                    break;
-                }
-            }
-        }
+        for (size_t i = 0; i < new_str.size(); ++i)
+            if (new_str[i] == '*' && old_str[i] != '*')
+                _error_logs.push_back("Invalid string transition: " + old_str + " -> " + new_str);
 
         if (!_error_logs.empty()) {
             _error = Error::SyntaxError;
@@ -232,8 +261,8 @@ void PDASimulator::parse_transitions(const std::string &line) {
         }
     }
 
-    Condition condition = std::make_tuple(State(from_state), input_char[0], stack_top[0]);
-    Action action = std::make_tuple(State(to_state), stack_push);
+    Condition condition = std::make_tuple(from_state, old_str);
+    Action action = std::make_tuple(new_str, direction_str, to_state);
 
     if (_transitions.find(condition) != _transitions.end()) {
         _error_logs.push_back("Duplicate transition condition");

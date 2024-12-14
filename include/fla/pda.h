@@ -1,6 +1,5 @@
 #pragma once
 
-#include <cstddef>
 #include <fla/simulator.h>
 #include <fla/util.h>
 
@@ -11,7 +10,7 @@
 
 namespace fla {
 
-class PDASimulator : public Simulator {
+class PDASimulator final : public Simulator {
   public:
     PDASimulator() = default;
     ~PDASimulator() = default;
@@ -21,22 +20,22 @@ class PDASimulator : public Simulator {
 
   private:
     // Parsing
-    void parse_states(std::string &line);
-    void parse_input_alphabet(std::string &line);
-    void parse_stack_alphabet(std::string &line);
-    void parse_start_state(std::string &line);
-    void parse_stack_start_symbol(std::string &line);
-    void parse_accept_states(std::string &line);
-    void parse_transitions(std::string &line);
+    void parse_states(const std::string &line);
+    void parse_input_alphabet(const std::string &line);
+    void parse_stack_alphabet(const std::string &line);
+    void parse_start_state(const std::string &line);
+    void parse_stack_start_symbol(const std::string &line);
+    void parse_accept_states(const std::string &line);
+    void parse_transitions(const std::string &line);
 
     // Running
     void step();
-    void halt();
+    void halt() override;
 
     // Logging
     void print_state();
     void print_stack();
-    void error_handler();
+    void error_handler() override;
 
     // Configuration
     using Condition = std::tuple<State, char, char>;

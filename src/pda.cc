@@ -1,4 +1,5 @@
 #include <cstddef>
+#include <cstdlib>
 #include <fla/pda.h>
 
 #include <iomanip>
@@ -8,28 +9,36 @@
 namespace fla {
 
 void PDASimulator::run(const std::string &input) {
-    for (size_t i = 0; i < input.size(); ++i) {
-        std::string tmp = std::string(1, input[i]);
 
-        if (!_input_alphabet.contains(tmp)) {
-            _error = Error::InputError;
-            _error_logs.push_back("Input: " + input);
-            _error_logs.push_back("==================== ERR ====================");
-            _error_logs.push_back("error: '" + tmp +
-                                  "' was not declared in the set of input symbols");
-            _error_logs.push_back("Input: " + input);
-            _error_logs.push_back(std::string(7 + i, ' ') + std::string(1, '^'));
-            _error_logs.push_back("==================== END ====================");
-            error_handler();
+    { // check input
+        for (size_t i = 0; i < input.size(); ++i) {
+            std::string tmp = std::string(1, input[i]);
+
+            if (!_input_alphabet.contains(tmp)) {
+                _error = Error::InputError;
+                _error_logs.push_back("Input: " + input);
+                _error_logs.push_back("==================== ERR ====================");
+                _error_logs.push_back("error: '" + tmp +
+                                      "' was not declared in the set of input symbols");
+                _error_logs.push_back("Input: " + input);
+                _error_logs.push_back(std::string(7 + i, ' ') + std::string(1, '^'));
+                _error_logs.push_back("==================== END ====================");
+                error_handler();
+            }
         }
-
-        _input.push(input[i]);
     }
-    _stack.push_back(_stack_start_symbol[0]);
-    _current_state = _start_state;
 
-    std::clog << "Input: " + input << std::endl;
-    std::clog << "==================== RUN ====================" << std::endl;
+    { // init PDA
+        for (size_t i = 0; i < input.size(); ++i)
+            _input.push(input[i]);
+        _stack.push_back(_stack_start_symbol[0]);
+        _current_state = _start_state;
+    }
+
+    if (_verbose) {
+        std::cout << "Input: " + input << std::endl;
+        std::cout << "==================== RUN ====================" << std::endl;
+    }
 
     while (true) {
         if (_verbose)
@@ -75,9 +84,14 @@ void PDASimulator::step() {
 }
 
 void PDASimulator::halt() {
-    std::clog << "Halted after " << _counter << " steps." << std::endl;
-    std::cout << std::boolalpha << _accept << std::endl;
-    exit(0);
+    if (_verbose) {
+        std::clog << "Halted after " << _counter << " steps." << std::endl;
+        std::cout << "Result: " << std::boolalpha << _accept << std::endl;
+        std::cout << "==================== END ====================" << std::endl;
+    } else
+        std::cout << std::boolalpha << _accept << std::endl;
+
+    exit(EXIT_SUCCESS);
 }
 
 void PDASimulator::error_handler() {
@@ -93,6 +107,7 @@ void PDASimulator::error_handler() {
             std::cerr << "illegal input" << std::endl;
             break;
         default:
+            std::cerr << "unknown error" << std::endl;
             break;
         }
     } else {
@@ -101,7 +116,7 @@ void PDASimulator::error_handler() {
             std::cerr << error << std::endl;
         }
     }
-    exit(1);
+    exit(EXIT_FAILURE);
 }
 
 void PDASimulator::print_stack() {
@@ -112,28 +127,29 @@ void PDASimulator::print_stack() {
 
     std::clog << std::left << std::setw(7) << "Stack" << ": ";
     for (size_t i = 0; i < _stack.size(); i++)
-        std::clog << std::left << std::setw(static_cast<int>(std::to_string(i).size()))
-                  << _stack[i];
+        std::clog << std::left << std::setw(static_cast<int>(std::to_string(i).size())) << _stack[i]
+                  << ' ';
     std::clog << std::endl;
 
     std::clog << std::left << std::setw(7) << "Head" << ": ";
     for (size_t i = 0; i < _stack.size(); i++)
         std::clog << std::left << std::setw(static_cast<int>(std::to_string(i).size()))
-                  << (i == _stack.size() - 1 ? "^" : " ");
+                  << (i == _stack.size() - 1 ? "^"
+                                             : std::string(std::to_string(i).size() + 1, ' '));
     std::clog << std::endl;
 }
 
 void PDASimulator::print_state() {
-    std::clog << std::left << std::setw(7) << "Step" << ": " << _counter << std::endl;
-    std::clog << std::left << std::setw(7) << "State" << ": " << _current_state.name() << std::endl;
+    std::cout << std::left << std::setw(7) << "Step" << ": " << _counter << std::endl;
+    std::cout << std::left << std::setw(7) << "State" << ": " << _current_state.name() << std::endl;
     if (_stack.empty()) {
-        std::clog << std::left << std::setw(7) << "Index" << ": 0" << std::endl;
-        std::clog << std::left << std::setw(7) << "Stack" << ": _" << std::endl;
-        std::clog << std::left << std::setw(7) << "Head" << ": ^" << std::endl;
+        std::cout << std::left << std::setw(7) << "Index" << ": 0" << std::endl;
+        std::cout << std::left << std::setw(7) << "Stack" << ": _" << std::endl;
+        std::cout << std::left << std::setw(7) << "Head" << ": ^" << std::endl;
     } else {
         print_stack();
     }
-    std::clog << "---------------------------------------------" << std::endl;
+    std::cout << "---------------------------------------------" << std::endl;
 }
 
 } // namespace fla
