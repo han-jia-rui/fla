@@ -20,12 +20,11 @@ set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
 
 add_executable(fla)
 
-target_include_directories(fla
-                            PUBLIC ${PROJECT_SOURCE_DIR}/include
-                            PRIVATE ${PROJECT_SOURCE_DIR}/src)
+target_include_directories(fla PUBLIC ${PROJECT_SOURCE_DIR}/fla-project/include)
 
-file(GLOB_RECURSE fla_sources src/*.cc)
-target_sources(fla PRIVATE ${fla_sources})
+file(GLOB_RECURSE fla_sources ${PROJECT_SOURCE_DIR}/fla-project/src/*.cc)
+
+target_sources(fla PRIVATE ${fla_sources} ${PROJECT_SOURCE_DIR}/fla-project/main.cc)
 
 target_compile_options(fla PRIVATE -Wall -Wextra -Werror -Wpedantic)
 
