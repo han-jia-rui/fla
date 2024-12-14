@@ -21,6 +21,8 @@ void print_usage() {
 
 int main(int argc, char *argv[]) {
 
+    std::clog.setstate(std::ios_base::failbit);
+
     std::map<std::string, bool> options = {
         {"-h", false},
         {"--help", false},
@@ -47,10 +49,6 @@ int main(int argc, char *argv[]) {
     if (options["-h"] || options["--help"]) {
         print_usage();
         return EXIT_SUCCESS;
-    }
-
-    if (!options["-v"] && !options["--verbose"]) {
-        std::clog.setstate(std::ios_base::failbit);
     }
 
     if (args.size() != 2) {

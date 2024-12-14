@@ -37,7 +37,10 @@ class Tape {
     Tape() = default;
     ~Tape() = default;
 
-    void init(const std::string &input) { _tape.assign(input.begin(), input.end()); };
+    void init(const std::string &input) {
+        if (!input.empty())
+            _tape.assign(input.begin(), input.end());
+    };
     char read() const {
         assert(_head >= 0 && _head < static_cast<int>(_tape.size()));
         return _tape[static_cast<size_t>(_head)];

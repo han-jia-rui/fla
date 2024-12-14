@@ -120,23 +120,23 @@ void PDASimulator::error_handler() {
 }
 
 void PDASimulator::print_stack() {
-    std::clog << std::left << std::setw(7) << "Index" << ": ";
+    std::cout << std::left << std::setw(7) << "Index" << ": ";
     for (size_t i = 0; i < _stack.size(); i++)
-        std::clog << i << ' ';
-    std::clog << std::endl;
+        std::cout << i << ' ';
+    std::cout << std::endl;
 
-    std::clog << std::left << std::setw(7) << "Stack" << ": ";
+    std::cout << std::left << std::setw(7) << "Stack" << ": ";
     for (size_t i = 0; i < _stack.size(); i++)
-        std::clog << std::left << std::setw(static_cast<int>(std::to_string(i).size())) << _stack[i]
+        std::cout << std::left << std::setw(static_cast<int>(std::to_string(i).size())) << _stack[i]
                   << ' ';
-    std::clog << std::endl;
+    std::cout << std::endl;
 
-    std::clog << std::left << std::setw(7) << "Head" << ": ";
+    std::cout << std::left << std::setw(7) << "Head" << ": ";
     for (size_t i = 0; i < _stack.size(); i++)
-        std::clog << std::left << std::setw(static_cast<int>(std::to_string(i).size()))
+        std::cout << std::left << std::setw(static_cast<int>(std::to_string(i).size()))
                   << (i == _stack.size() - 1 ? "^"
                                              : std::string(std::to_string(i).size() + 1, ' '));
-    std::clog << std::endl;
+    std::cout << std::endl;
 }
 
 void PDASimulator::print_state() {

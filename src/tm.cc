@@ -73,28 +73,28 @@ std::string Tape::to_string() {
 }
 
 void Tape::print(size_t idx) {
-    std::clog << std::left << std::setw(7) << "Index" + std::to_string(idx) << ": ";
+    std::cout << std::left << std::setw(7) << "Index" + std::to_string(idx) << ": ";
     for (size_t i = 0; i < _tape.size(); i++) {
         int num = std::abs(_offset + static_cast<int>(i));
-        std::clog << num << ' ';
+        std::cout << num << ' ';
     }
-    std::clog << std::endl;
+    std::cout << std::endl;
 
-    std::clog << std::left << std::setw(7) << "Stack" + std::to_string(idx) << ": ";
+    std::cout << std::left << std::setw(7) << "Tape" + std::to_string(idx) << ": ";
     for (size_t i = 0; i < _tape.size(); i++) {
         int num = std::abs(_offset + static_cast<int>(i));
-        std::clog << std::left << std::setw(static_cast<int>(std::to_string(num).size()))
+        std::cout << std::left << std::setw(static_cast<int>(std::to_string(num).size()))
                   << _tape[i] << ' ';
     }
-    std::clog << std::endl;
+    std::cout << std::endl;
 
-    std::clog << std::left << std::setw(7) << "Head" + std::to_string(idx) << ": ";
-    for (size_t i = 0; i < _tape.size(); i++) {
-        int num = std::abs(_offset + static_cast<int>(i));
-        std::clog << std::left << std::setw(static_cast<int>(std::to_string(num).size()))
-                  << (i == _tape.size() - 1 ? "^" : " ") << " ";
+    std::cout << std::left << std::setw(7) << "Head" + std::to_string(idx) << ": ";
+    for (int i = 0; i <= _head; i++) {
+        int num = std::abs(_offset + i);
+        std::cout << std::left << std::setw(static_cast<int>(std::to_string(num).size()))
+                  << (i == _head ? "^" : " ") << " ";
     }
-    std::clog << std::endl;
+    std::cout << std::endl;
 }
 
 void TMSimulator::run(const std::string &input) {
@@ -133,6 +133,7 @@ void TMSimulator::run(const std::string &input) {
 
         step();
         _counter++;
+        // assert(_counter <= 50);
     }
 }
 
