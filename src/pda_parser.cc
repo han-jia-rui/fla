@@ -100,6 +100,21 @@ void PDASimulator::parse(const std::string &filepath) {
         if (_transitions.empty())
             _error_logs.push_back("No transitions defined");
 
+        for (const auto &transition : _transitions) {
+            const auto &from_state = std::get<0>(transition.first);
+            const auto &input_char = std::get<1>(transition.first);
+            const auto &stack_top = std::get<2>(transition.first);
+
+            if (input_char != '_') {
+                Condition empty_input_condition = std::make_tuple(from_state, '_', stack_top);
+                if (_transitions.find(empty_input_condition) != _transitions.end()) {
+                    _error_logs.push_back("Duplicate transition condition:");
+                    _error_logs.push_back(from_state.name() + " " + input_char + " " + stack_top);
+                    _error_logs.push_back(from_state.name() + " " + '_' + " " + stack_top);
+                }
+            }
+        }
+
         if (!_error_logs.empty()) {
             _error = Error::SyntaxError;
             error_handler();

@@ -22,7 +22,6 @@ void PDASimulator::run(const std::string &input) {
                                       "' was not declared in the set of input symbols");
                 _error_logs.push_back("Input: " + input);
                 _error_logs.push_back(std::string(7 + i, ' ') + std::string(1, '^'));
-                _error_logs.push_back("==================== END ====================");
                 error_handler();
             }
         }
@@ -44,14 +43,6 @@ void PDASimulator::run(const std::string &input) {
         if (_verbose)
             print_state();
 
-        if (_input.empty() && _accept_states.find(_current_state) != _accept_states.end()) {
-            _accept = true;
-            halt();
-        }
-
-        if (_stack.empty())
-            halt();
-
         step();
         _counter++;
     }
@@ -61,17 +52,31 @@ void PDASimulator::step() {
     char stack_top, input_char;
     stack_top = _stack[_stack.size() - 1];
     _stack.erase(_stack.end() - 1);
+
+    bool matched = false;
     if (!_input.empty()) {
         input_char = _input.front();
         _input.pop();
-    } else
-        input_char = '_';
 
+        Condition current_condition = std::make_tuple(_current_state, input_char, stack_top);
+        auto it = _transitions.find(current_condition);
+        if (it != _transitions.end()) {
+            _current_state = std::get<0>(it->second);
+            std::string push_chars = std::get<1>(it->second);
+            if (push_chars != "_") {
+                std::reverse(push_chars.begin(), push_chars.end());
+                for (char c : push_chars) {
+                    _stack.push_back(c);
+                }
+            }
+            matched = true;
+        }
+    }
+
+    input_char = '_';
     Condition current_condition = std::make_tuple(_current_state, input_char, stack_top);
     auto it = _transitions.find(current_condition);
-    if (it == _transitions.end()) {
-        halt();
-    } else {
+    if (it != _transitions.end()) {
         _current_state = std::get<0>(it->second);
         std::string push_chars = std::get<1>(it->second);
         if (push_chars != "_") {
@@ -80,7 +85,19 @@ void PDASimulator::step() {
                 _stack.push_back(c);
             }
         }
+        matched = true;
     }
+
+    if (_input.empty() && _accept_states.find(_current_state) != _accept_states.end()) {
+        _accept = true;
+        halt();
+    }
+
+    if (_stack.empty())
+        halt();
+
+    if (!matched)
+        halt();
 }
 
 void PDASimulator::halt() {
@@ -115,23 +132,25 @@ void PDASimulator::error_handler() {
         for (const std::string &error : _error_logs) {
             std::cerr << error << std::endl;
         }
+        std::cerr << "==================== END ====================";
     }
     exit(EXIT_FAILURE);
 }
 
 void PDASimulator::print_stack() {
-    std::cout << std::left << std::setw(7) << "Index" << ": ";
+    int width = 6;
+    std::cout << std::left << std::setw(width) << "Index" << ": ";
     for (size_t i = 0; i < _stack.size(); i++)
         std::cout << i << ' ';
     std::cout << std::endl;
 
-    std::cout << std::left << std::setw(7) << "Stack" << ": ";
+    std::cout << std::left << std::setw(width) << "Stack" << ": ";
     for (size_t i = 0; i < _stack.size(); i++)
         std::cout << std::left << std::setw(static_cast<int>(std::to_string(i).size())) << _stack[i]
                   << ' ';
     std::cout << std::endl;
 
-    std::cout << std::left << std::setw(7) << "Head" << ": ";
+    std::cout << std::left << std::setw(width) << "Head" << ": ";
     for (size_t i = 0; i < _stack.size(); i++)
         std::cout << std::left << std::setw(static_cast<int>(std::to_string(i).size()))
                   << (i == _stack.size() - 1 ? "^"
@@ -140,12 +159,14 @@ void PDASimulator::print_stack() {
 }
 
 void PDASimulator::print_state() {
-    std::cout << std::left << std::setw(7) << "Step" << ": " << _counter << std::endl;
-    std::cout << std::left << std::setw(7) << "State" << ": " << _current_state.name() << std::endl;
+    int width = 6;
+    std::cout << std::left << std::setw(width) << "Step" << ": " << _counter << std::endl;
+    std::cout << std::left << std::setw(width) << "State" << ": " << _current_state.name()
+              << std::endl;
     if (_stack.empty()) {
-        std::cout << std::left << std::setw(7) << "Index" << ": 0" << std::endl;
-        std::cout << std::left << std::setw(7) << "Stack" << ": _" << std::endl;
-        std::cout << std::left << std::setw(7) << "Head" << ": ^" << std::endl;
+        std::cout << std::left << std::setw(width) << "Index" << ": 0" << std::endl;
+        std::cout << std::left << std::setw(width) << "Stack" << ": _" << std::endl;
+        std::cout << std::left << std::setw(width) << "Head" << ": ^" << std::endl;
     } else {
         print_stack();
     }

@@ -68,42 +68,18 @@ illegal_input a__ ___ r** illegal_input
 illegal_input b__ ___ r** illegal_input
 illegal_input ___ ___ *** print0
 
-; <print0>
+; <print>
 print0 ___ i__ r** print1
-
-; <print1>
 print1 ___ l__ r** print2
-
-; <print2>
 print2 ___ l__ r** print3
-
-; <print3>
 print3 ___ e__ r** print4
-
-; <print4>
 print4 ___ g__ r** print5
-
-; <print5>
 print5 ___ a__ r** print6
-
-; <print6>
 print6 ___ l__ r** print7
-
-; <print7>
 print7 ___ ___ r** print8
-
-; <print8>
 print8 ___ i__ r** print9
-
-; <print9>
 print9 ___ n__ r** print10
-
-; <print10>
 print10 ___ p__ r** print11
-
-; <print11>
 print11 ___ u__ r** print12
-
-; <print12>
 print12 ___ t__ *** halt
 

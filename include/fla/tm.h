@@ -5,7 +5,6 @@
 
 #include <cassert>
 #include <deque>
-#include <map>
 #include <string>
 #include <tuple>
 #include <vector>
@@ -25,8 +24,6 @@ class SymbolSeq {
     char operator[](size_t index) const { return _symbol_seq[index]; }
 
     bool operator==(const SymbolSeq &rhs) const;
-
-    bool operator<(const SymbolSeq &rhs) const { return _symbol_seq < rhs.to_string(); }
 
   private:
     std::string _symbol_seq;
@@ -48,7 +45,7 @@ class Tape {
     void step(char symbol, char direction);
 
     std::string to_string();
-    void print(size_t idx);
+    void print(size_t idx, int width);
 
   private:
     void expand();
@@ -96,7 +93,7 @@ class TMSimulator : public Simulator {
     std::string _empty_symbol{};
     std::set<State> _accept_states{};
     size_t _tape_number = 0;
-    std::map<Condition, Action> _transitions{};
+    std::vector<std::pair<Condition, Action>> _transitions{};
 
     // Run-time data
     size_t _counter = 0;

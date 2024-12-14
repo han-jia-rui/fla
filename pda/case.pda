@@ -4,13 +4,13 @@
 ; Result: true
 
 ; States set
-#Q = {q0,accept}
+#Q = {q0,q1,reject}
 
 ; Input alphabet
 #S = {(,)}
 
 ; Stack alphabet
-#G = {1,z}
+#G = {0,1,z}
 
 ; Start state
 #q0 = q0
@@ -19,10 +19,15 @@
 #z0 = z
 
 ; Final states
-#F = {accept}
+#F = {q0}
 
 ; the transition functions
-q0 ( z q0 1z
-q0 ( 1 q0 11
-q0 ) 1 q0 _
-q0 _ z accept _
+q0 ( z q1 0z
+q0 ) z reject _
+
+q1 ( 0 q1 10
+q1 ( 1 q1 11
+
+q1 ) 1 q1 _
+q1 ) 0 q0 _
+

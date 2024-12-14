@@ -12,10 +12,13 @@ bool SymbolSeq::operator==(const SymbolSeq &rhs) const {
     if (_symbol_seq.size() != rhs.size())
         return false;
     for (size_t i = 0; i < rhs.size(); ++i) {
-        if (_symbol_seq[i] == '_' or rhs[i] == '_')
-            return false;
-        if (_symbol_seq[i] != '*' and rhs[i] != '*' and _symbol_seq[i] != rhs[i])
-            return false;
+        if (_symbol_seq[i] == rhs[i])
+            continue;
+        if (_symbol_seq[i] == '*' and rhs[i] != '_')
+            continue;
+        if (_symbol_seq[i] != '_' and rhs[i] == '*')
+            continue;
+        return false;
     }
     return true;
 }
@@ -69,18 +72,26 @@ std::string Tape::to_string() {
     for (char c : _tape) {
         tmp.push_back(c);
     }
+    while (tmp.front() == '_') {
+        tmp.erase(tmp.begin());
+    }
+
+    while (tmp.back() == '_') {
+        tmp.pop_back();
+    }
+
     return tmp;
 }
 
-void Tape::print(size_t idx) {
-    std::cout << std::left << std::setw(7) << "Index" + std::to_string(idx) << ": ";
+void Tape::print(size_t idx, int width) {
+    std::cout << std::left << std::setw(width) << "Index" + std::to_string(idx) << ": ";
     for (size_t i = 0; i < _tape.size(); i++) {
         int num = std::abs(_offset + static_cast<int>(i));
         std::cout << num << ' ';
     }
     std::cout << std::endl;
 
-    std::cout << std::left << std::setw(7) << "Tape" + std::to_string(idx) << ": ";
+    std::cout << std::left << std::setw(width) << "Tape" + std::to_string(idx) << ": ";
     for (size_t i = 0; i < _tape.size(); i++) {
         int num = std::abs(_offset + static_cast<int>(i));
         std::cout << std::left << std::setw(static_cast<int>(std::to_string(num).size()))
@@ -88,7 +99,7 @@ void Tape::print(size_t idx) {
     }
     std::cout << std::endl;
 
-    std::cout << std::left << std::setw(7) << "Head" + std::to_string(idx) << ": ";
+    std::cout << std::left << std::setw(width) << "Head" + std::to_string(idx) << ": ";
     for (int i = 0; i <= _head; i++) {
         int num = std::abs(_offset + i);
         std::cout << std::left << std::setw(static_cast<int>(std::to_string(num).size()))
@@ -133,7 +144,6 @@ void TMSimulator::run(const std::string &input) {
 
         step();
         _counter++;
-        // assert(_counter <= 50);
     }
 }
 
@@ -143,19 +153,21 @@ void TMSimulator::step() {
         cur_str.push_back(tape.read());
 
     Condition current_condition = std::make_tuple(_current_state, cur_str);
-    auto it = _transitions.find(current_condition);
-    if (it == _transitions.end()) {
-        halt();
-    } else {
-        const SymbolSeq &new_str = std::get<0>(it->second);
-        const std::string &direction = std::get<1>(it->second);
-        const State &next_state = std::get<2>(it->second);
 
-        _current_state = next_state;
-        for (size_t i = 0; i < _tape_number; ++i) {
-            _tapes[i].step(new_str[i], direction[i]);
+    for (const auto &transition : _transitions) {
+        if (transition.first == current_condition) {
+            const SymbolSeq &new_str = std::get<0>(transition.second);
+            const std::string &direction = std::get<1>(transition.second);
+            const State &next_state = std::get<2>(transition.second);
+
+            _current_state = next_state;
+            for (size_t i = 0; i < _tape_number; ++i) {
+                _tapes[i].step(new_str[i], direction[i]);
+            }
+            return;
         }
     }
+    halt();
 }
 
 void TMSimulator::halt() {
@@ -170,10 +182,12 @@ void TMSimulator::halt() {
 }
 
 void TMSimulator::print_state() {
-    std::cout << std::left << std::setw(7) << "Step" << ": " << _counter << std::endl;
-    std::cout << std::left << std::setw(7) << "State" << ": " << _current_state.name() << std::endl;
+    int width = 5 + static_cast<int>(std::to_string(_tape_number).size()) + 1;
+    std::cout << std::left << std::setw(width) << "Step" << ": " << _counter << std::endl;
+    std::cout << std::left << std::setw(width) << "State" << ": " << _current_state.name()
+              << std::endl;
     for (size_t i = 0; i < _tapes.size(); ++i)
-        _tapes[i].print(i);
+        _tapes[i].print(i, width);
     std::cout << "---------------------------------------------" << std::endl;
 }
 
@@ -198,7 +212,7 @@ void TMSimulator::error_handler() {
         for (const std::string &error : _error_logs) {
             std::cerr << error << std::endl;
         }
-        std::cout << "==================== END ====================" << std::endl;
+        std::cerr << "==================== END ====================" << std::endl;
     }
     exit(EXIT_FAILURE);
 }

@@ -21,7 +21,7 @@ void print_usage() {
 
 int main(int argc, char *argv[]) {
 
-    std::clog.setstate(std::ios_base::failbit);
+    // std::clog.setstate(std::ios_base::failbit);
 
     std::map<std::string, bool> options = {
         {"-h", false},

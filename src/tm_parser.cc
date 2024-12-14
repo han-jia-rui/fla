@@ -5,6 +5,7 @@
 #include <iostream>
 #include <regex>
 #include <sstream>
+#include <utility>
 
 namespace fla {
 
@@ -264,13 +265,15 @@ void TMSimulator::parse_transitions(const std::string &line) {
     Condition condition = std::make_tuple(from_state, old_str);
     Action action = std::make_tuple(new_str, direction_str, to_state);
 
-    if (_transitions.find(condition) != _transitions.end()) {
-        _error_logs.push_back("Duplicate transition condition");
-        _error = Error::SyntaxError;
-        return;
+    for (const auto &transition : _transitions) {
+        if (transition.first == condition) {
+            _error_logs.push_back("Duplicate transition condition");
+            _error = Error::SyntaxError;
+            return;
+        }
     }
 
-    _transitions[condition] = action;
+    _transitions.push_back(std::make_pair(condition, action));
 }
 
 } // namespace fla
