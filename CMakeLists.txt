@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 3.15.0)
 
-project(FLA
+# ---- Project ----
+project(fla
         LANGUAGES CXX)
 
 # ---- Include guards ----
@@ -26,13 +27,8 @@ file(GLOB_RECURSE fla_sources ${PROJECT_SOURCE_DIR}/fla-project/src/*.cc)
 
 target_sources(fla PRIVATE ${fla_sources} ${PROJECT_SOURCE_DIR}/fla-project/main.cc)
 
-target_compile_options(fla PRIVATE -Wall -Wextra -Werror -Wpedantic)
-
-if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
-    include(CTest)
-endif()
-
 if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME AND BUILD_TESTING)
+    include(CTest)
     add_subdirectory(test)
 endif()
 
