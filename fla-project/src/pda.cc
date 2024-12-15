@@ -43,6 +43,14 @@ void PDASimulator::run(const std::string &input) {
         if (_verbose)
             print_state();
 
+        if (_input.empty() && _accept_states.find(_current_state) != _accept_states.end()) {
+            _accept = true;
+            halt();
+        }
+
+        if (_stack.empty())
+            halt();
+
         step();
         _counter++;
     }
@@ -53,51 +61,40 @@ void PDASimulator::step() {
     stack_top = _stack[_stack.size() - 1];
     _stack.erase(_stack.end() - 1);
 
-    bool matched = false;
-    if (!_input.empty()) {
+    std::string push_chars{};
+    State next_state{};
+    Condition current_condition{};
+    std::map<Condition, Action>::iterator it;
+
+    current_condition = std::make_tuple(_current_state, '_', stack_top);
+    it = _transitions.find(current_condition);
+    if (it != _transitions.end()) {
+        next_state = std::get<0>(it->second);
+        push_chars = std::get<1>(it->second);
+    }
+
+    if (push_chars.empty() && !_input.empty()) {
         input_char = _input.front();
         _input.pop();
 
-        Condition current_condition = std::make_tuple(_current_state, input_char, stack_top);
-        auto it = _transitions.find(current_condition);
+        current_condition = std::make_tuple(_current_state, input_char, stack_top);
+        it = _transitions.find(current_condition);
         if (it != _transitions.end()) {
-            _current_state = std::get<0>(it->second);
-            std::string push_chars = std::get<1>(it->second);
-            if (push_chars != "_") {
-                std::reverse(push_chars.begin(), push_chars.end());
-                for (char c : push_chars) {
-                    _stack.push_back(c);
-                }
-            }
-            matched = true;
+            next_state = std::get<0>(it->second);
+            push_chars = std::get<1>(it->second);
         }
     }
 
-    input_char = '_';
-    Condition current_condition = std::make_tuple(_current_state, input_char, stack_top);
-    auto it = _transitions.find(current_condition);
-    if (it != _transitions.end()) {
-        _current_state = std::get<0>(it->second);
-        std::string push_chars = std::get<1>(it->second);
-        if (push_chars != "_") {
-            std::reverse(push_chars.begin(), push_chars.end());
-            for (char c : push_chars) {
-                _stack.push_back(c);
-            }
+    if (push_chars.empty())
+        halt();
+
+    _current_state = next_state;
+    if (push_chars != "_") {
+        std::reverse(push_chars.begin(), push_chars.end());
+        for (char c : push_chars) {
+            _stack.push_back(c);
         }
-        matched = true;
     }
-
-    if (_input.empty() && _accept_states.find(_current_state) != _accept_states.end()) {
-        _accept = true;
-        halt();
-    }
-
-    if (_stack.empty())
-        halt();
-
-    if (!matched)
-        halt();
 }
 
 void PDASimulator::halt() {
@@ -132,7 +129,7 @@ void PDASimulator::error_handler() {
         for (const std::string &error : _error_logs) {
             std::cerr << error << std::endl;
         }
-        std::cerr << "==================== END ====================";
+        std::cerr << "==================== END ====================" << std::endl;
     }
     exit(EXIT_FAILURE);
 }
