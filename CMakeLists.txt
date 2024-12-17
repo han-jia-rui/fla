@@ -36,7 +36,7 @@ add_subdirectory(fla-project/app)
 # ---- Test ----
 
 find_package(Catch2)
-if(CATCH2_FOUND)
+if(Catch2_FOUND)
     include(CTest)
     add_subdirectory(fla-project/test)
 else()
