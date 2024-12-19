@@ -14,3 +14,6 @@ docs: build
 
 clean:
     rm -rf ./build ./bin
+
+edit:
+    @${VISUAL} {{justfile()}}
