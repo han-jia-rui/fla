@@ -14,12 +14,12 @@ namespace fla {
 class SymbolSeq {
   public:
     SymbolSeq() = default;
-    SymbolSeq(const std::string &s) : _symbol_seq(s) {};
+    explicit SymbolSeq(const std::string &s) : _symbol_seq(s) {};
     ~SymbolSeq() = default;
 
     size_t size() const { return _symbol_seq.size(); };
 
-    std::string to_string() const { return _symbol_seq; };
+    const std::string &to_string() const { return _symbol_seq; };
 
     char operator[](size_t index) const { return _symbol_seq[index]; }
 
@@ -45,7 +45,7 @@ class Tape {
     void step(char symbol, char direction);
 
     std::string to_string();
-    void print(size_t idx, int width);
+    void print(size_t idx, int width) const;
 
   private:
     void expand();
@@ -59,7 +59,7 @@ class Tape {
 class TMSimulator : public Simulator {
   public:
     TMSimulator() = default;
-    ~TMSimulator() = default;
+    ~TMSimulator() override = default;
 
     void parse(const std::string &filepath) override;
     void run(const std::string &input) override;

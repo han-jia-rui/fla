@@ -69,9 +69,7 @@ void Tape::shrink() {
 
 std::string Tape::to_string() {
     std::string tmp{};
-    for (char c : _tape) {
-        tmp.push_back(c);
-    }
+    std::copy(_tape.begin(), _tape.end(), std::back_inserter(tmp));
     while (tmp.front() == '_') {
         tmp.erase(tmp.begin());
     }
@@ -83,7 +81,7 @@ std::string Tape::to_string() {
     return tmp;
 }
 
-void Tape::print(size_t idx, int width) {
+void Tape::print(size_t idx, int width) const {
     std::cout << std::left << std::setw(width) << "Index" + std::to_string(idx) << ": ";
     for (size_t i = 0; i < _tape.size(); i++) {
         int num = std::abs(_offset + static_cast<int>(i));
@@ -148,25 +146,29 @@ void TMSimulator::run(const std::string &input) {
 }
 
 void TMSimulator::step() {
-    std::string cur_str{};
-    for (const auto &tape : _tapes)
-        cur_str.push_back(tape.read());
+    std::string cur_str(_tapes.size(), '\0');
+    std::transform(_tapes.begin(), _tapes.end(), cur_str.begin(),
+                   [](const auto &tape) { return tape.read(); });
 
-    Condition current_condition = std::make_tuple(_current_state, cur_str);
+    Condition current_condition = std::make_tuple(_current_state, SymbolSeq(cur_str));
 
-    for (const auto &transition : _transitions) {
-        if (transition.first == current_condition) {
-            const SymbolSeq &new_str = std::get<0>(transition.second);
-            const std::string &direction = std::get<1>(transition.second);
-            const State &next_state = std::get<2>(transition.second);
+    auto it = std::find_if(_transitions.begin(), _transitions.end(),
+                           [&current_condition](const auto &transition) {
+                               return transition.first == current_condition;
+                           });
 
-            _current_state = next_state;
-            for (size_t i = 0; i < _tape_number; ++i) {
-                _tapes[i].step(new_str[i], direction[i]);
-            }
-            return;
+    if (it != _transitions.end()) {
+        const SymbolSeq &new_str = std::get<0>(it->second);
+        const std::string &direction = std::get<1>(it->second);
+        const State &next_state = std::get<2>(it->second);
+
+        _current_state = next_state;
+        for (size_t i = 0; i < _tape_number; ++i) {
+            _tapes[i].step(new_str[i], direction[i]);
         }
+        return;
     }
+
     halt();
 }
 
