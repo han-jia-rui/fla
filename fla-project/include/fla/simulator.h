@@ -19,17 +19,17 @@ enum class Error {
 class State {
   public:
     State() = default;
-    State(std::string name) : _name(name) {}
+    explicit State(const std::string &name) : _name(name) {}
     ~State() = default;
 
-    void set_name(std::string name) { _name = name; };
+    void set_name(const std::string &name) { _name = name; };
 
     static bool is_valid(std::string name);
 
     bool operator==(const State &rhs) const { return _name == rhs._name; }
     bool operator<(const State &rhs) const { return _name < rhs._name; }
 
-    const std::string name() const { return _name; };
+    const std::string &name() const { return _name; };
 
     bool empty() const { return _name.empty(); };
 
@@ -61,6 +61,8 @@ class Simulator {
     virtual void run(const std::string &input) = 0;
 
     void set_verbose(bool verbose);
+
+    friend class SimulatorTest;
 
   protected:
     virtual void halt() = 0;

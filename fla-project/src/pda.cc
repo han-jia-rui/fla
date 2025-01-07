@@ -57,7 +57,7 @@ void PDASimulator::run(const std::string &input) {
 }
 
 void PDASimulator::step() {
-    char stack_top, input_char;
+    char stack_top;
     stack_top = _stack[_stack.size() - 1];
     _stack.erase(_stack.end() - 1);
 
@@ -74,7 +74,7 @@ void PDASimulator::step() {
     }
 
     if (push_chars.empty() && !_input.empty()) {
-        input_char = _input.front();
+        char input_char = _input.front();
         _input.pop();
 
         current_condition = std::make_tuple(_current_state, input_char, stack_top);
@@ -91,9 +91,7 @@ void PDASimulator::step() {
     _current_state = next_state;
     if (push_chars != "_") {
         std::reverse(push_chars.begin(), push_chars.end());
-        for (char c : push_chars) {
-            _stack.push_back(c);
-        }
+        std::copy(push_chars.begin(), push_chars.end(), std::back_inserter(_stack));
     }
 }
 
@@ -134,7 +132,7 @@ void PDASimulator::error_handler() {
     exit(EXIT_FAILURE);
 }
 
-void PDASimulator::print_stack() {
+void PDASimulator::print_stack() const {
     int width = 6;
     std::cout << std::left << std::setw(width) << "Index" << ": ";
     for (size_t i = 0; i < _stack.size(); i++)
@@ -155,7 +153,7 @@ void PDASimulator::print_stack() {
     std::cout << std::endl;
 }
 
-void PDASimulator::print_state() {
+void PDASimulator::print_state() const {
     int width = 6;
     std::cout << std::left << std::setw(width) << "Step" << ": " << _counter << std::endl;
     std::cout << std::left << std::setw(width) << "State" << ": " << _current_state.name()

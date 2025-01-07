@@ -101,9 +101,6 @@ void TMSimulator::parse(const std::string &filepath) {
         if (_accept_states.empty())
             _error_logs.push_back("No accept states defined");
 
-        if (_tape_number <= 0)
-            _error_logs.push_back("No tape number defined");
-
         if (_transitions.empty())
             _error_logs.push_back("No transitions defined");
 
@@ -262,15 +259,16 @@ void TMSimulator::parse_transitions(const std::string &line) {
         }
     }
 
-    Condition condition = std::make_tuple(from_state, old_str);
-    Action action = std::make_tuple(new_str, direction_str, to_state);
+    Condition condition = std::make_tuple(State(from_state), SymbolSeq(old_str));
+    Action action = std::make_tuple(SymbolSeq(new_str), direction_str, State(to_state));
 
-    for (const auto &transition : _transitions) {
-        if (transition.first == condition) {
-            _error_logs.push_back("Duplicate transition condition");
-            _error = Error::SyntaxError;
-            return;
-        }
+    auto duplicate =
+        std::any_of(_transitions.begin(), _transitions.end(),
+                    [&condition](const auto &transition) { return transition.first == condition; });
+    if (duplicate) {
+        _error_logs.push_back("Duplicate transition condition");
+        _error = Error::SyntaxError;
+        return;
     }
 
     _transitions.push_back(std::make_pair(condition, action));

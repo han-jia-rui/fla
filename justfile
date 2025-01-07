@@ -4,7 +4,7 @@ default:build
 
 build:
     cmake -S . -B build
-    cmake --build build
+    cmake --build build --parallel 4
 
 test: build
     cmake --build build --target test

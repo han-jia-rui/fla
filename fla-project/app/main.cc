@@ -19,7 +19,7 @@ void print_usage() {
     std::cerr << "      \tfla [-v|--verbose] <tm> <input>\n";
 }
 
-int main(int argc, char *argv[]) {
+int main(int argc, const char *argv[]) {
 
     std::clog.setstate(std::ios_base::failbit);
 

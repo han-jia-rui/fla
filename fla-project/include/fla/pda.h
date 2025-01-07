@@ -13,7 +13,7 @@ namespace fla {
 class PDASimulator final : public Simulator {
   public:
     PDASimulator() = default;
-    ~PDASimulator() = default;
+    ~PDASimulator() override = default;
 
     void parse(const std::string &filepath) override;
     void run(const std::string &input) override;
@@ -33,8 +33,8 @@ class PDASimulator final : public Simulator {
     void halt() override;
 
     // Logging
-    void print_state();
-    void print_stack();
+    void print_state() const;
+    void print_stack() const;
     void error_handler() override;
 
     // Configuration

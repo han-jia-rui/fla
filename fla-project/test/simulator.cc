@@ -1,8 +1,19 @@
-#include <fla/simulator.h>
-
 #include <catch2/catch_test_macros.hpp>
 
-TEST_CASE("parser test", "[parser]") {
-    REQUIRE(1 == 1);
-    REQUIRE(1 == 1);
-}
+#include <fla/pda.h>
+#include <fla/simulator.h>
+
+namespace fla {
+
+class SimulatorTest {
+  public:
+    static void test_verbose() {
+        PDASimulator pda{};
+        pda.set_verbose(true);
+        REQUIRE(pda._verbose == true);
+    }
+};
+
+} // namespace fla
+
+TEST_CASE("simulator test", "[simulator]") { fla::SimulatorTest::test_verbose(); }
