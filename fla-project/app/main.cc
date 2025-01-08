@@ -1,5 +1,6 @@
 /**
- * @file
+ * @file app/main.cc
+ * @author Han Jiarui
  * @brief The main file for the fla program.
  */
 
@@ -20,7 +21,6 @@ void print_usage() {
 }
 
 int main(int argc, const char *argv[]) {
-
     std::clog.setstate(std::ios_base::failbit);
 
     std::map<std::string, bool> options = {
@@ -73,6 +73,7 @@ int main(int argc, const char *argv[]) {
         simulator = std::make_unique<fla::TMSimulator>();
     } else {
         std::cerr << "Unknown file type: " << filepath << std::endl;
+        std::cerr << "The file format must be '*.pda' or '*.tm'" << std::endl;
         return EXIT_FAILURE;
     }
 

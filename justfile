@@ -9,6 +9,9 @@ build:
 test: build
     cmake --build build --target test
 
+pytest: build
+    pytest ./python
+
 docs: build
     cmake --build build --target docs
 
@@ -17,3 +20,4 @@ clean:
 
 edit:
     @${VISUAL} {{justfile()}}
+
