@@ -1,16 +1,11 @@
 #include <fla/pda.h>
 
 #include <fstream>
-#include <functional>
-#include <iostream>
 #include <regex>
-#include <sstream>
-#include <string>
 
 namespace fla {
 
 void PDASimulator::parse(const std::string &filepath) {
-    std::clog << "Parsing PDM from file: " << filepath << std::endl;
     std::ifstream fin(filepath);
 
     if (!fin.is_open()) {
@@ -45,6 +40,10 @@ void PDASimulator::parse(const std::string &filepath) {
             std::regex(R"(#F = \{([^}]+)\})"),
             [this](const std::string &line) -> void { this->parse_accept_states(line); },
         },
+        {
+            std::regex(R"(([^#{}]+))"),
+            [this](const std::string &line) -> void { this->parse_transitions(line); },
+        },
     };
 
     std::string line;
@@ -69,8 +68,10 @@ void PDASimulator::parse(const std::string &filepath) {
             }
         }
 
-        if (!matched)
-            parse_transitions(line);
+        if (!matched) {
+            _error_logs.push_back("Invalid transition format");
+            _error = Error::SyntaxError;
+        }
 
         if (_error != Error::None) {
             _error_logs.push_back("Error in line " + std::to_string(line_number) + ": " + line);
@@ -207,7 +208,7 @@ void PDASimulator::parse_transitions(const std::string &line) {
         elements.push_back(item);
 
     if (elements.size() != 5) {
-        _error_logs.push_back("Incorrect transition format");
+        _error_logs.push_back("Invalid format");
         _error = Error::SyntaxError;
         return;
     }

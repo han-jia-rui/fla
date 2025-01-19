@@ -66,7 +66,6 @@ int main(int argc, const char *argv[]) {
     }
 
     std::unique_ptr<fla::Simulator> simulator{};
-
     if (extension == "pda") {
         simulator = std::make_unique<fla::PDASimulator>();
     } else if (extension == "tm") {
@@ -77,9 +76,13 @@ int main(int argc, const char *argv[]) {
         return EXIT_FAILURE;
     }
 
-    simulator->set_verbose(options["-v"] || options["--verbose"]);
-    simulator->parse(filepath);
-    simulator->run(input);
+    try {
+        simulator->set_verbose(options["-v"] || options["--verbose"]);
+        simulator->parse(filepath);
+        simulator->run(input);
+    } catch (const fla::Error &e) {
+        return EXIT_FAILURE;
+    }
 
     return EXIT_SUCCESS;
 }

@@ -172,7 +172,7 @@ void TMSimulator::step() {
     halt();
 }
 
-void TMSimulator::halt() {
+void TMSimulator::halt() noexcept {
     if (_verbose) {
         std::clog << "Halted after " << _counter << " steps." << std::endl;
         std::cout << "Result: " << _tapes[0].to_string() << std::endl;
@@ -191,32 +191,6 @@ void TMSimulator::print_state() {
     for (size_t i = 0; i < _tapes.size(); ++i)
         _tapes[i].print(i, width);
     std::cout << "---------------------------------------------" << std::endl;
-}
-
-void TMSimulator::error_handler() {
-    if (_error == Error::None)
-        return;
-
-    if (!_verbose) {
-        switch (_error) {
-        case Error::SyntaxError:
-            std::cerr << "syntax error" << std::endl;
-            break;
-        case Error::InputError:
-            std::cerr << "illegal input" << std::endl;
-            break;
-        default:
-            std::cerr << "unknown error" << std::endl;
-            break;
-        }
-    } else {
-        std::clog << "Error logs:" << std::endl;
-        for (const std::string &error : _error_logs) {
-            std::cerr << error << std::endl;
-        }
-        std::cerr << "==================== END ====================" << std::endl;
-    }
-    exit(EXIT_FAILURE);
 }
 
 } // namespace fla

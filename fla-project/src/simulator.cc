@@ -19,9 +19,41 @@ bool Alphabet::is_valid(std::string s) {
     return std::isprint(s[0]) && invalidChars.find(s[0]) == invalidChars.end();
 }
 
-void Simulator::set_verbose(bool verbose) {
+void Simulator::set_verbose(bool verbose) noexcept {
     std::clog << "Verbose mode: " << (verbose ? "on" : "off") << std::endl;
     _verbose = verbose;
+}
+
+void Simulator::reset() noexcept {
+    _verbose = false;
+    _error = Error::None;
+    _error_logs.clear();
+}
+
+void Simulator::error_handler() {
+    if (_error == Error::None)
+        return;
+
+    if (!_verbose) {
+        switch (_error) {
+        case Error::SyntaxError:
+            std::cerr << "syntax error" << std::endl;
+            break;
+        case Error::InputError:
+            std::cerr << "illegal input" << std::endl;
+            break;
+        default:
+            break;
+        }
+    } else {
+        std::clog << "Error logs:" << std::endl;
+        for (const std::string &error : _error_logs) {
+            std::cerr << error << std::endl;
+        }
+        std::cerr << "==================== END ====================" << std::endl;
+    }
+
+    throw _error;
 }
 
 } // namespace fla

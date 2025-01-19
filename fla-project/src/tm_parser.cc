@@ -1,11 +1,8 @@
 #include <fla/tm.h>
 
 #include <fstream>
-#include <functional>
 #include <iostream>
 #include <regex>
-#include <sstream>
-#include <utility>
 
 namespace fla {
 

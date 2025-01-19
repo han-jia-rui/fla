@@ -1,10 +1,7 @@
 #include <fla/pda.h>
 
-#include <cstddef>
-#include <cstdlib>
 #include <iomanip>
 #include <iostream>
-#include <string>
 
 namespace fla {
 
@@ -95,7 +92,7 @@ void PDASimulator::step() {
     }
 }
 
-void PDASimulator::halt() {
+void PDASimulator::halt() noexcept {
     if (_verbose) {
         std::clog << "Halted after " << _counter << " steps." << std::endl;
         std::cout << "Result: " << std::boolalpha << _accept << std::endl;
@@ -106,33 +103,7 @@ void PDASimulator::halt() {
     exit(EXIT_SUCCESS);
 }
 
-void PDASimulator::error_handler() {
-    if (_error == Error::None)
-        return;
-
-    if (!_verbose) {
-        switch (_error) {
-        case Error::SyntaxError:
-            std::cerr << "syntax error" << std::endl;
-            break;
-        case Error::InputError:
-            std::cerr << "illegal input" << std::endl;
-            break;
-        default:
-            std::cerr << "unknown error" << std::endl;
-            break;
-        }
-    } else {
-        std::clog << "Error logs:" << std::endl;
-        for (const std::string &error : _error_logs) {
-            std::cerr << error << std::endl;
-        }
-        std::cerr << "==================== END ====================" << std::endl;
-    }
-    exit(EXIT_FAILURE);
-}
-
-void PDASimulator::print_stack() const {
+void PDASimulator::print_stack() const noexcept {
     int width = 6;
     std::cout << std::left << std::setw(width) << "Index" << ": ";
     for (size_t i = 0; i < _stack.size(); i++)
@@ -153,7 +124,7 @@ void PDASimulator::print_stack() const {
     std::cout << std::endl;
 }
 
-void PDASimulator::print_state() const {
+void PDASimulator::print_state() const noexcept {
     int width = 6;
     std::cout << std::left << std::setw(width) << "Step" << ": " << _counter << std::endl;
     std::cout << std::left << std::setw(width) << "State" << ": " << _current_state.name()

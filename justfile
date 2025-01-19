@@ -18,6 +18,5 @@ docs: build
 clean:
     rm -rf ./build ./bin
 
-edit:
-    @${VISUAL} {{justfile()}}
-
+line-count:
+    cloc ./fla-project ./python

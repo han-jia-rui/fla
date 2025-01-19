@@ -77,11 +77,10 @@ class TMSimulator : public Simulator {
 
     // Running
     void step();
-    void halt() override;
+    void halt() noexcept override;
 
     // Logging
     void print_state();
-    void error_handler() override;
 
     // Configuration
     using Condition = std::tuple<State, SymbolSeq>;

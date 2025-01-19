@@ -30,12 +30,11 @@ class PDASimulator final : public Simulator {
 
     // Running
     void step();
-    void halt() override;
+    void halt() noexcept override;
 
     // Logging
-    void print_state() const;
-    void print_stack() const;
-    void error_handler() override;
+    void print_state() const noexcept;
+    void print_stack() const noexcept;
 
     // Configuration
     using Condition = std::tuple<State, char, char>;

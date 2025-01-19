@@ -59,14 +59,14 @@ class Simulator {
 
     virtual void parse(const std::string &filepath) = 0;
     virtual void run(const std::string &input) = 0;
-
-    void set_verbose(bool verbose);
+    virtual void reset() noexcept;
+    virtual void set_verbose(bool verbose) noexcept;
 
     friend class SimulatorTest;
 
   protected:
-    virtual void halt() = 0;
-    virtual void error_handler() = 0;
+    virtual void halt() noexcept { _halted = true; };
+    virtual void error_handler();
 
     bool _verbose = false;
 
